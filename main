@@ -1,0 +1,247 @@
+
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import os
+import google.generativeai as genai
+from datetime import datetime
+
+# --- PAGE CONFIG ---
+st.set_page_config(
+    page_title="GRC Strategic Vision 2030",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# --- THEME & STYLING ---
+st.markdown("""
+    <style>
+    :root {
+        --primary: #6366f1;
+        --secondary: #10b981;
+        --bg: #0f172a;
+        --card-bg: rgba(30, 41, 59, 0.7);
+    }
+    .main { background-color: var(--bg); }
+    .stApp { background-color: var(--bg); }
+    
+    .glass-card {
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+    .glass-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+    }
+    .metric-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .roadmap-step {
+        border-left: 3px solid var(--primary);
+        padding-left: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    .roadmap-step::before {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 0;
+        width: 13px;
+        height: 13px;
+        background: var(--primary);
+        border-radius: 50%;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- HELPER: GEMINI AI ---
+def query_gemini(prompt):
+    try:
+        api_key = os.environ.get("API_KEY")
+        if not api_key:
+            return "⚠️ API Key not found. Please set the API_KEY environment variable."
+        
+        genai.configure(api_key=api_key)
+        # Using the specified gemini-3-flash-preview for speed and efficiency
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        return f"Intelligence engine offline: {str(e)}"
+
+# --- SIDEBAR ---
+with st.sidebar:
+    st.markdown("## 🛡️ Case Study Portal")
+    st.caption("Strategic GRC Evolution Tool")
+    
+    st.divider()
+    
+    nav = st.radio(
+        "Navigation",
+        ["Executive Summary", "1. Unified Control Mapping", "2. Automation Blueprint", "3. Strategic Roadmap", "4. ROI Dashboard"]
+    )
+    
+    st.divider()
+    
+    st.markdown("### 🤖 Interview Assistant")
+    topic = st.text_input("Ask a follow-up question:", placeholder="e.g. How do we handle legacy systems?")
+    if st.button("Generate Strategic Response"):
+        with st.spinner("Consulting Gemini..."):
+            res = query_gemini(f"The user is in a GRC interview. Question: {topic}. Provide a strategic, data-driven answer emphasizing business partnership and automation.")
+            st.info(res)
+
+# --- CONTENT: EXECUTIVE SUMMARY ---
+if nav == "Executive Summary":
+    st.title("The Future of Strategic GRC")
+    st.subheader("Transforming from 'Audit Police' to 'Business Growth Partner'")
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.markdown(f"""
+        <div class="glass-card">
+            <h3>Vision Statement</h3>
+            <p>To move GRC from a periodic, reactive friction point to a real-time, automated strategic engine that empowers the business to navigate complexity with speed and confidence.</p>
+            <p><b>Primary Objectives:</b></p>
+            <ul>
+                <li>Operationalize <i>'Map Once, Comply Many'</i> to reduce audit fatigue.</li>
+                <li>Establish <i>Continuous Control Monitoring (CCM)</i> via automated telemetry.</li>
+                <li>Shift focus to <i>Risk Quantification</i> as a decision-support tool.</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.info("💡 **Interview Tip:** Start by acknowledging that GRC traditionally slows things down, but your goal is to make it a 'Safety Net at Speed'.")
+
+    with col2:
+        st.markdown("### Strategic Pillars")
+        st.button("⚙️ Efficiency: -60% Audit Prep Time", use_container_width=True)
+        st.button("🎯 Accuracy: 100% Control Visibility", use_container_width=True)
+        st.button("🚀 Growth: Risk-Informed Decision Making", use_container_width=True)
+
+# --- CONTENT: MAPPING ---
+elif nav == "1. Unified Control Mapping":
+    st.title("🔗 Strategy: Map Once, Comply Many")
+    st.markdown("#### The Common Control Framework (CCF) Hierarchy")
+    
+    # Sunburst Data
+    df = pd.DataFrame({
+        "Hierarchy": ["Unified GRC", "Access Management", "Access Management", "Access Management", "Unified GRC", "Data Privacy", "Data Privacy", "Data Privacy"],
+        "Regulation": ["Root", "SOC 2 (CC6.1)", "ISO 27001 (A.9)", "HIPAA (164.308)", "Root", "GDPR (Art 32)", "CCPA", "NIST CSF"],
+        "Strength": [10, 3, 3, 4, 10, 4, 3, 3]
+    })
+    
+    fig = px.sunburst(df, path=['Hierarchy', 'Regulation'], values='Strength', 
+                     color_discrete_sequence=px.colors.qualitative.Pastel)
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig, use_container_width=True)
+    
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.markdown("""
+        ### The Workflow
+        1. **Consolidate:** Identity commonalities across frameworks.
+        2. **Standardize:** Define one 'Golden Internal Control'.
+        3. **Map:** Tag the internal control with all regulatory requirements.
+        4. **Test:** Perform one audit test to satisfy all linked tags.
+        """)
+    with col_b:
+        st.success("✅ **Benefit:** Eliminates redundant testing. If Access Control passes, it's green for SOC2, ISO, and HIPAA simultaneously.")
+
+# --- CONTENT: AUTOMATION ---
+elif nav == "2. Automation Blueprint":
+    st.title("⚡ Identifying Automation Opportunities")
+    st.markdown("#### The 'Atomic' Evidence Collection Engine")
+    
+    control_type = st.selectbox("Select a Control Area to Automate:", 
+                                ["Endpoint Security", "User Access Reviews", "Change Management", "Vulnerability Management"])
+    
+    if control_type == "User Access Reviews":
+        st.markdown("""
+        <div class="glass-card">
+            <h4>Automation Path: Okta/AD API Integration</h4>
+            <p><b>Opportunity:</b> Manual quarterly reviews are error-prone and slow.</p>
+            <p><b>Solution:</b> Scripted evidence collection that compares HRIS (Workday) status against IAM (Okta) status in real-time.</p>
+            <p><b>Automation Potential:</b> 90%</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.divider()
+    
+    st.markdown("### The Automation Hierarchy")
+    auto_data = pd.DataFrame({
+        "Maturity Level": ["Level 1: Manual", "Level 2: Scripted", "Level 3: API-Driven", "Level 4: Self-Healing"],
+        "Effort Required": [100, 60, 20, 5],
+        "Reliability": [70, 85, 95, 99]
+    })
+    
+    fig = px.line(auto_data, x="Maturity Level", y=["Effort Required", "Reliability"], 
+                  markers=True, title="Maturity vs. Operational Overhead")
+    st.plotly_chart(fig, use_container_width=True)
+
+# --- CONTENT: ROADMAP ---
+elif nav == "3. Strategic Roadmap":
+    st.title("🚀 The 5-Year GRC Transformation")
+    
+    st.markdown("""
+    <div class="roadmap-step">
+        <h4>Year 1: Foundation (Digitalization)</h4>
+        <p>Implementing the GRC Tool and centralizing the Control Library. Shifting from Excel to a single source of truth.</p>
+    </div>
+    <div class="roadmap-step">
+        <h4>Year 2: Integration (CCM)</h4>
+        <p>Connecting GRC to the Tech Stack (AWS, GitHub, Okta). Automated evidence collection becomes the default for 50% of controls.</p>
+    </div>
+    <div class="roadmap-step">
+        <h4>Year 3-4: Risk Quantification (Strategic Hub)</h4>
+        <p>Moving from 'High/Medium/Low' to financial impact modeling (FAIR). GRC begins advising on business risk appetite.</p>
+    </div>
+    <div class="roadmap-step" style="border-left-color: #10b981;">
+        <h4>Year 5: Autonomous GRC (Strategic Partner)</h4>
+        <p>Real-time risk telemetry allows for 'Self-Auditing' systems. GRC provides the guardrails that allow Product teams to deploy faster.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.info("🎯 **Strategic Goal:** By Year 5, GRC is no longer a 'check-box' exercise; it's a real-time risk advisory service for the CEO.")
+
+# --- CONTENT: ROI ---
+elif nav == "4. ROI Dashboard":
+    st.title("📊 Strategic Value & ROI")
+    st.markdown("#### Real-Time Decision Support")
+    
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Audit Fatigue Index", "-45%", "Target: -60%")
+    col2.metric("Continuous Compliance", "94%", "Status: Healthy")
+    col3.metric("Decision Speed-Up", "+30%", "Strategic Impact")
+    
+    # Sample Risk Data
+    risk_df = pd.DataFrame({
+        "Month": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        "Residual Risk": [80, 75, 60, 45, 30, 25],
+        "Compliance Maturity": [40, 50, 65, 78, 85, 92]
+    })
+    
+    fig = px.area(risk_df, x="Month", y=["Residual Risk", "Compliance Maturity"], 
+                  title="Risk Reduction vs. Maturity Growth",
+                  color_discrete_sequence=["#ef4444", "#10b981"])
+    st.plotly_chart(fig, use_container_width=True)
+    
+    st.markdown("""
+    ### Business Value Summary
+    - **Speed to Market:** Engineering teams spend less time on evidence gathering and more on shipping.
+    - **Resource Optimization:** Reallocating GRC staff from data entry to high-value risk analysis.
+    - **Predictive Resilience:** Identifying control failures before they become breaches.
+    """)
+
+# --- FOOTER ---
+st.divider()
+st.caption(f"GRC Strategic Vision Case Study Tool | Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}")
